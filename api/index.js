@@ -1,8 +1,9 @@
 const express = require('express');
+const cors = require('cors');
 const routerApi = require('./routes');
 const { logErrors, errorHandler, boomErrorHandler } = require('./middlewares/error.handler');
 const app = express();
-const port = 3001;
+const port = process.env.PORT || 3000;
 const swaggerUI = require('swagger-ui-express');
 const swaggerJsDoc = require('swagger-jsdoc');
 const path = require('path');
@@ -24,13 +25,25 @@ const swaggerSpec = {
 }
 
 app.use(express.json());
-app.use('/api-doc', swaggerUI.serve, swaggerUI.setup(swaggerJsDoc(swaggerSpec)));
 
-app.get('/', (req, res) => {
+const whiteList = ['http://localhost:8080'];
+const options = {
+  origin: (origin, callback) => {
+    if(whiteList.includes(origin)){
+        callback(null, true);
+    } else {
+      callback(new Error('No permitido'));
+    }
+  }
+}
+app.use(cors());
+app.use('/api/api-doc', swaggerUI.serve, swaggerUI.setup(swaggerJsDoc(swaggerSpec)));
+
+app.get('/api', (req, res) => {
   res.send('Hola mi server en express');
 });
 
-app.get('/NuevaRuta', (req, res) => {
+app.get('/api/nueva-ruta', (req, res) => {
   res.send('Hola soy una nueva ruta');
 });
 
